@@ -117,3 +117,78 @@ we are building an agi
 Andrej has a [YouTube video](https://www.youtube.com/watch?v=zduSFxRajkE) on the BPE.
 
 to handle an unknown word BPE breaks down the word into characters.
+
+## Preparing the dataset
+
+I'm using PyTorch classes `Dataset` and `DataLoader`
+
+```python
+import torch
+from torch.utils.data import Dataset, DataLoader
+
+class CustomDataset(Dataset):
+    def __init__(self, text, tokenizer, block_size, stride):
+        self.x = []
+        self.y = []
+        token_ids = tokenizer.encode(text)
+
+        for i in range(0, len(token_ids) - block_size, stride):
+            input = token_ids[i:i + block_size]
+            target = token_ids[i + 1:i + block_size + 1]
+            self.x.append(torch.tensor(input))
+            self.y.append(torch.tensor(target))
+
+    def __len__(self):
+        return len(self.x)
+
+    def __getitem__(self, idx):
+        return self.x[idx], self.y[idx]
+```
+
+I'm creating a dataloader
+
+```python
+block_size = 4 # what is the maximum context length for predictions?
+batch_size = 1 # how many independent sequences will we process in parallel?
+stride = 1 # how many positions the input shifts across batches?
+
+data = CustomDataset(text, tokenizer, block_size, stride)
+
+train_dataloader = DataLoader(dataset=data, 
+                              batch_size=batch_size,
+                              num_workers=1,
+                              shuffle=True)
+```
+
+see the input and target
+
+```python
+data_iter = iter(train_dataloader)
+x, y = next(data_iter)
+
+print("inputs:")
+print(x)
+print("targets:")
+print(y)
+```
+
+```
+inputs:
+tensor([[ 10652,  70176,    412,  59509],
+        [ 11062,    290,  77689,    198],
+        [   889,    357,   1715,  10304],
+        [  1632,  15939,  54659,   1076],
+        [   484,  37510,    413,  75843],
+        [ 32618,     11,    357,    198],
+        [157223,    198, 197964,  12698],
+        [  1661,     11,   1954,    501]])
+targets:
+tensor([[ 70176,    412,  59509, 113080],
+        [   290,  77689,    198,   2566],
+        [   357,   1715,  10304,   1262],
+        [ 15939,  54659,   1076,    364],
+        [ 37510,    413,  75843,    261],
+        [    11,    357,    198,   4117],
+        [   198, 197964,  12698,    306],
+        [    11,   1954,    501,  32195]])
+```
