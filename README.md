@@ -192,3 +192,28 @@ tensor([[ 70176,    412,  59509, 113080],
         [   198, 197964,  12698,    306],
         [    11,   1954,    501,  32195]])
 ```
+
+## Converting tokens to their embeddings
+
+I'm using an inbuilt neural network module `nn.Embedding`. This layer works like a lookup operation. For example, in the input sequence if we want to get an embedding for the token_id `5`, look into the `6`th row of input_embedding_matrix and pluck the row out. That's the embedding for token_id `5`.
+
+
+```python
+vocab_size = 50257
+outpur_dim = 256 # GPT3 uses 12,288 dim
+embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
+```
+
+add positional encoding to encode positional information
+
+```python
+context_length = max_length # tokens to be processed
+pos_embedding_layer = torch.nn.Embedding(context_length, output_dim)
+pos_embeddings = pos_embedding_layer(torch.arange(context_length)) # placeholder vector of 0, 1, 2...max_length - 1
+```
+
+these embeddings are added to the token embeddings
+
+```python
+input_embeddings = token_embeddings + pos_embeddings
+```
