@@ -1,12 +1,12 @@
-# LLMs
+# Building a LLM
 
-In this project, I'm implementing LLM from scratch, one concept at a time.
+I'm implementing LLM from scratch, one concept at a time in this project.
 
 ## Tokenizer
 
 Tokenization means converting the raw text as a string to some sequence of integers according to some vocabulary of possible elements
 
-To get started I'm using the tiny_shakespeare dataset. a simple implementation of a tokenizer could be at the character level or word level.
+To get started I'm using the tiny_shakespeare dataset. a simple tokeniser implementation could be at the character level or word level.
 
 ### Reading the data
 
@@ -77,7 +77,7 @@ class tokenizer:
         return text
 ```
 
-initiating the tokenizer and trying our encoder and decoder.
+I'm initiating the tokenizer and trying our encoder and decoder.
 
 ```python
 tokenizer = Tokenizer(text)
@@ -93,7 +93,7 @@ we are building an agi
 
 we can also add special tokens like `|end_of_text|`, `|reserved_special_token_0|`
 
-I'm using tiktoken which uses a byte pair encoding(BPE) algorithm for tokenization. Andrej Karpathy has a clean implementation of the BPE algorithm. 
+I'm using `tiktoken` which uses a byte pair encoding(BPE) algorithm for tokenization. Andrej Karpathy has a clean implementation of the BPE algorithm. 
 
 ```python
 import tiktoken
@@ -116,7 +116,7 @@ we are building an agi
 
 Andrej has a [YouTube video](https://www.youtube.com/watch?v=zduSFxRajkE) on the BPE.
 
-to handle an unknown word BPE breaks down the word into characters.
+To handle an unknown word BPE breaks down the word into characters.
 
 ## Preparing the dataset
 
@@ -145,7 +145,7 @@ class CustomDataset(Dataset):
         return self.x[idx], self.y[idx]
 ```
 
-I'm creating a dataloader
+I'm creating a PyTorch dataloader.
 
 ```python
 block_size = 4 # what is the maximum context length for predictions?
