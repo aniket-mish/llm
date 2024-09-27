@@ -1,6 +1,32 @@
-# Building a LLM
+# Building an LLM
 
-I'm implementing LLM from scratch, one concept at a time in this project.
+I'm implementing an LLM from scratch, one component at a time.
+
+## Setup
+
+1. Download and install Miniforge
+
+https://github.com/fastai/fastsetup/blob/master/setup-conda.sh
+
+2. Create new virtual environment
+
+```bash
+conda create -n llms python=3.10
+```
+
+```bash
+conda activate llms
+```
+
+3. Install required python packages
+
+```bash
+pip install -r requirements.txt
+```
+
+1. Building
+2. Pretraining
+3. Finetuning
 
 ## Tokenizer
 
@@ -93,7 +119,7 @@ we are building an agi
 
 we can also add special tokens like `|end_of_text|`, `|reserved_special_token_0|`
 
-I'm using `tiktoken` which uses a byte pair encoding(BPE) algorithm for tokenization. Andrej Karpathy has a clean implementation of the BPE algorithm. 
+I'm using [tiktoken](https://github.com/openai/tiktoken) library which uses a byte pair encoding(BPE) algorithm for tokenization. Andrej Karpathy has a clean implementation of the BPE algorithm. 
 
 ```python
 import tiktoken
@@ -104,7 +130,7 @@ we can encode and decode
 
 ```python
 text = "we are building an agi"
-ids = enc.encode(text, allowed_special={ "<|end_of_text|>" })
+ids = enc.encode(text)
 print(ids)
 print(enc.decode(ids))
 ```
@@ -114,13 +140,13 @@ print(enc.decode(ids))
 we are building an agi
 ```
 
-Andrej has a [YouTube video](https://www.youtube.com/watch?v=zduSFxRajkE) on the BPE.
+How does tiktoken handles unknown words (out of vocab)? the algorithm breaks down the ou of vocab words into subword units or even at character level. See it in action [here](https://tiktokenizer.vercel.app).
 
-To handle an unknown word BPE breaks down the word into characters.
+Andrej has a [YouTube video](https://www.youtube.com/watch?v=zduSFxRajkE) on the BPE.
 
 ## Preparing the dataset
 
-I'm using PyTorch classes `Dataset` and `DataLoader`
+I'm using PyTorch classes `Dataset` and `DataLoader`. A custom Dataset class must implement three functions: __init__, __len__, and __getitem__.
 
 ```python
 import torch
@@ -137,15 +163,9 @@ class CustomDataset(Dataset):
             target = token_ids[i + 1:i + block_size + 1]
             self.x.append(torch.tensor(input))
             self.y.append(torch.tensor(target))
-
-    def __len__(self):
-        return len(self.x)
-
-    def __getitem__(self, idx):
-        return self.x[idx], self.y[idx]
 ```
 
-I'm creating a PyTorch dataloader.
+I'm creating a PyTorch dataloader to load the data in batches.
 
 ```python
 block_size = 4 # what is the maximum context length for predictions?
@@ -195,25 +215,37 @@ tensor([[ 70176,    412,  59509, 113080],
 
 ## Converting tokens to their embeddings
 
-I'm using an inbuilt neural network module `nn.Embedding`. This layer works like a lookup operation. For example, in the input sequence if we want to get an embedding for the token_id `5`, look into the `6`th row of input_embedding_matrix and pluck the row out. That's the embedding for token_id `5`.
+I'm using an inbuilt pytorch module `nn.Embedding`. This layer works like a lookup operation. For example, in the input sequence if we want to get an embedding for the token_id `5`, look into the `6`th row of input_embedding_matrix and pluck the row out. That's the embedding for token_id `5`.
 
 
 ```python
 vocab_size = 50257
-outpur_dim = 256 # GPT3 uses 12,288 dim
+output_dim = 256 # GPT3 uses 12,288 dim
 embedding_layer = torch.nn.Embedding(vocab_size, output_dim)
+token_embeddings = embedding_layer(x)
 ```
 
-add positional encoding to encode positional information
+## Add positional encoding to encode positional information
+
+in original paper these are fixed but since GPT2 these are like regular parameters that are learned in training
 
 ```python
-context_length = max_length # tokens to be processed
+context_length = max_length
 pos_embedding_layer = torch.nn.Embedding(context_length, output_dim)
-pos_embeddings = pos_embedding_layer(torch.arange(context_length)) # placeholder vector of 0, 1, 2...max_length - 1
+pos_embeddings = pos_embedding_layer(torch.arange(context_length)) # 0 1 ... max_length-1
 ```
 
-these embeddings are added to the token embeddings
+token embeddings are then added to the positional embeddings to get the final input embeddings
 
 ```python
 input_embeddings = token_embeddings + pos_embeddings
 ```
+
+## Attention mechanism
+
+attention mechanism is the aggregation/reduce function
+
+there are different variants of attention mechanism like self-attention (original attn),
+causal attention(mask future tokens), multi-head attention(attends to tokens in parallel)
+
+self-attention mechanism allows each token to attend to tokens in all other positions
