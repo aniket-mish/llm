@@ -245,7 +245,17 @@ input_embeddings = token_embeddings + pos_embeddings
 
 attention mechanism is the aggregation/reduce function
 
-there are different variants of attention mechanism like self-attention (original attn),
-causal attention(mask future tokens), multi-head attention(attends to tokens in parallel)
+self-attention mechanism allows each token to attend to tokens in all other positions and it works as follows:
 
-self-attention mechanism allows each token to attend to tokens in all other positions
+step 1: calculate attention scores by taking dot product of current token (query) with all the other tokens (keys)
+
+step 2: use softmax to normalize each attention scores (generally done for training stability)
+
+step 3: multiply input embeddings with attention scores and then sum up all the resulting vectors
+
+![Image](https://jalammar.github.io/images/t/self-attention-output.png)
+
+query => what i am looking for
+key => what do i contain
+value => if you find me interesting heres what i am communicating to you
+
