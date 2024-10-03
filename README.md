@@ -259,3 +259,7 @@ query => what i am looking for
 key => what do i contain
 value => if you find me interesting heres what i am communicating to you
 
+this is vanilla self-attention. there're further optimized versions to it. causal attention that masks the future tokens and multi-head attention that distributed causal attention to multiple heads.
+
+## Transformer 
+
