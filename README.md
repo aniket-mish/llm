@@ -258,7 +258,9 @@ step 3: multiply input embeddings with attention scores and then sum up all the 
 
 > [!NOTE]
 > query => what i am looking for
+>
 > key => what do i contain
+>
 > value => if you find me interesting heres what i am communicating to you
 
 
